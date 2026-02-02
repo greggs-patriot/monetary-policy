@@ -11,7 +11,7 @@ gilt_interest['date'] = gilt_interest['date'].astype(str).str.strip()
 gilt_interest['date'] = (pd.to_datetime(gilt_interest['date'],format='%Y %b')
                         + pd.offsets.MonthEnd(0))
 
-print(gilt_interest)
+#print(gilt_interest)
 
 interest_on_reserves = pd.read_csv(os.path.join('raw','smf_liabilites.csv'),
                             usecols=[0,3],
@@ -23,28 +23,32 @@ rates = pd.read_csv(os.path.join('raw','rates_and_ranges.csv'),
                     names=['date','bank_rate'],
                     header=0)
 
+rates = rates.set_index('date')
+interest_on_reserves = interest_on_reserves.set_index('date')
 
-df = rates.merge(interest_on_reserves,on='date')
-df['date'] = pd.to_datetime(df['date'], format='%d %b %y')
+def mat_to_month(rates : pd.DataFrame,amounts : pd.DataFrame):
+    df : pd.DataFrame = rates.merge(amounts,on='date') 
+    df.index = pd.to_datetime(df.index, format='%d %b %y')
+    
+    # Create full daily index
+    full_index = pd.date_range(df.index.min(),
+                            df.index.max(),
+                            freq='D')
 
-df = df.set_index('date')
+    # Expand and forward-fill
+    df_daily = df.reindex(full_index).ffill()
+    df_daily.index.name = 'date'
 
-# Create full daily index
-full_index = pd.date_range(df.index.min(),
-                           df.index.max(),
-                           freq='D')
+    df_daily['interest_paid'] = ((df_daily['bank_rate'] / 100) * df_daily['reserves']) / 365
 
-# Expand and forward-fill
-df_daily = df.reindex(full_index).ffill()
-df_daily.index.name = 'date'
+    #group by monthly
+    return pd.DataFrame(df_daily['interest_paid'].resample('ME').sum())
 
-df_daily['interest_paid'] = ((df_daily['bank_rate'] / 100) * df_daily['reserves']) / 365
-
-#group by monthly
-monthly = pd.DataFrame(df_daily['interest_paid'].resample('ME').sum())
+    
 
 
-monthly = monthly.merge(gilt_interest,left_index=True,right_on='date')
-monthly = monthly.set_index('date')
+#monthly = monthly.merge(gilt_interest,left_index=True,right_on='date')
+#monthly = monthly.set_index('date')
 
-print(monthly)
+df = mat_to_month(rates,interest_on_reserves)
+print(df)
