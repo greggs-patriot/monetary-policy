@@ -7,6 +7,12 @@ gilt_interest = pd.read_csv(os.path.join('raw','interest_on_debt.csv'),
                             skiprows=408,
                             names=['date','gilts'])
 
+gilt_interest['date'] = gilt_interest['date'].astype(str).str.strip()
+gilt_interest['date'] = (pd.to_datetime(gilt_interest['date'],format='%Y %b')
+                        + pd.offsets.MonthEnd(0))
+
+print(gilt_interest)
+
 interest_on_reserves = pd.read_csv(os.path.join('raw','smf_liabilites.csv'),
                             usecols=[0,3],
                             names=['date','reserves'],
@@ -18,8 +24,6 @@ rates = pd.read_csv(os.path.join('raw','rates_and_ranges.csv'),
                     header=0)
 
 
-#print(rates['date'].dtype)
-#print(interest_on_reserves['date'].dtype)
 df = rates.merge(interest_on_reserves,on='date')
 df['date'] = pd.to_datetime(df['date'], format='%d %b %y')
 
@@ -37,6 +41,10 @@ df_daily.index.name = 'date'
 df_daily['interest_paid'] = ((df_daily['bank_rate'] / 100) * df_daily['reserves']) / 365
 
 #group by monthly
-monthly = df_daily['interest_paid'].resample('ME').sum()
+monthly = pd.DataFrame(df_daily['interest_paid'].resample('ME').sum())
+
+
+monthly = monthly.merge(gilt_interest,left_index=True,right_on='date')
+monthly = monthly.set_index('date')
 
 print(monthly)
