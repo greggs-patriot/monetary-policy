@@ -17,10 +17,10 @@ liabilites = pd.read_csv(os.path.join('raw','smf_liabilites.csv'),
                             usecols=[0,1,3,4],
                             names=['date','deposit','reserves','op_deposit'],
                             header=0)
-#assets = pd.read_csv(os.path.join('raw','smf_assets.csv'),
-     #                       usecols=[0,1,3,4],
-      #                      names=['date',],
-        #                    header=0)
+assets = pd.read_csv(os.path.join('raw','smf_assets.csv'),
+                            usecols=[0,4,7,8],
+                            names=['date','lending','op_lending','short_term_repo'],
+                            header=0)
 
 rates = pd.read_csv(os.path.join('raw','rates_and_ranges.csv'),
                     usecols=[0,1,2,3,4,5],
@@ -29,6 +29,7 @@ rates = pd.read_csv(os.path.join('raw','rates_and_ranges.csv'),
 
 rates = rates.set_index('date')
 liabilites = liabilites.set_index('date')
+assets = assets.set_index('date')
 
 def mat_to_month(rates : pd.DataFrame,amounts : pd.DataFrame):
     df : pd.DataFrame = rates.merge(amounts,on='date').fillna(0)
@@ -62,7 +63,10 @@ def mat_to_month(rates : pd.DataFrame,amounts : pd.DataFrame):
 
 dfs = [mat_to_month(rates[['bank_r']],liabilites[['reserves']]),
                 mat_to_month(rates[['deposit_r']],liabilites[['deposit']]),
-                mat_to_month(rates[['op_deposit_r']],liabilites[['op_deposit']])]
+                mat_to_month(rates[['op_deposit_r']],liabilites[['op_deposit']]),
+                mat_to_month(rates[['bank_r']],assets[['short_term_repo']]),
+                mat_to_month(rates[['op_lending_r']],assets[['op_lending']]),
+                mat_to_month(rates[['lending_r']],assets[['lending']])]
  #               left_index=True,
   #              right_index=True)
 
