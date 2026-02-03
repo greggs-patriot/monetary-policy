@@ -14,12 +14,12 @@ gilt_interest['date'] = (pd.to_datetime(gilt_interest['date'],format='%Y %b')
 #print(gilt_interest)
 
 liabilites = pd.read_csv(os.path.join('raw','smf_liabilites.csv'),
-                            usecols=[0,1,3,4],
-                            names=['date','deposit','reserves','op_deposit'],
+                            usecols=[0,1,2,3,4,6],
+                            names=['date','deposit','fine_tune_l','reserves','op_deposit','weekly_l'],
                             header=0)
 assets = pd.read_csv(os.path.join('raw','smf_assets.csv'),
-                            usecols=[0,4,7,8],
-                            names=['date','lending','op_lending','short_term_repo'],
+                            usecols=[0,1,2,4,7,8],
+                            names=['date','weekly_a','fine_tune_a','lending','op_lending','short_term_repo'],
                             header=0)
 
 rates = pd.read_csv(os.path.join('raw','rates_and_ranges.csv'),
@@ -68,6 +68,10 @@ pairs = [
     ('bank_r',       assets,     'short_term_repo'),
     ('op_lending_r', assets,     'op_lending'),
     ('lending_r',    assets,     'lending'),
+    ('bank_r',    liabilites,     'fine_tune_l'),
+    ('bank_r',    liabilites,     'weekly_l'),
+    ('bank_r',    assets,     'fine_tune_a'),
+    ('bank_r',    assets,     'weekly_a'),
 ]
 
 dfs = [
