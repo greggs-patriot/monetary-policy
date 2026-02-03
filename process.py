@@ -61,13 +61,18 @@ def mat_to_month(rates : pd.DataFrame,amounts : pd.DataFrame):
 #monthly = monthly.merge(gilt_interest,left_index=True,right_on='date')
 #monthly = monthly.set_index('date')
 
-dfs = [mat_to_month(rates[['bank_r']],liabilites[['reserves']]),
-                mat_to_month(rates[['deposit_r']],liabilites[['deposit']]),
-                mat_to_month(rates[['op_deposit_r']],liabilites[['op_deposit']]),
-                mat_to_month(rates[['bank_r']],assets[['short_term_repo']]),
-                mat_to_month(rates[['op_lending_r']],assets[['op_lending']]),
-                mat_to_month(rates[['lending_r']],assets[['lending']])]
- #               left_index=True,
-  #              right_index=True)
+pairs = [
+    ('bank_r',       liabilites, 'reserves'),
+    ('deposit_r',    liabilites, 'deposit'),
+    ('op_deposit_r', liabilites, 'op_deposit'),
+    ('bank_r',       assets,     'short_term_repo'),
+    ('op_lending_r', assets,     'op_lending'),
+    ('lending_r',    assets,     'lending'),
+]
 
-pd.concat(dfs, axis=1).to_csv('test.csv')
+dfs = [
+    mat_to_month(rates[[r_col]], df[[a_col]])
+    for r_col, df, a_col in pairs
+]
+
+pd.concat(dfs, axis=1).to_csv("test.csv")
