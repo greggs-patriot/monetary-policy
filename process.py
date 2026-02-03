@@ -13,22 +13,27 @@ gilt_interest['date'] = (pd.to_datetime(gilt_interest['date'],format='%Y %b')
 
 #print(gilt_interest)
 
-interest_on_reserves = pd.read_csv(os.path.join('raw','smf_liabilites.csv'),
-                            usecols=[0,3],
-                            names=['date','reserves'],
+liabilites = pd.read_csv(os.path.join('raw','smf_liabilites.csv'),
+                            usecols=[0,1,3,4],
+                            names=['date','deposit','reserves','op_deposit'],
                             header=0)
+#assets = pd.read_csv(os.path.join('raw','smf_assets.csv'),
+     #                       usecols=[0,1,3,4],
+      #                      names=['date',],
+        #                    header=0)
 
 rates = pd.read_csv(os.path.join('raw','rates_and_ranges.csv'),
-                    usecols=[0,1],
-                    names=['date','bank_rate'],
+                    usecols=[0,1,2,3,4,5],
+                    names=['date','bank_r','lending_r','deposit_r','op_lending_r','op_deposit_r'],
                     header=0)
 
 rates = rates.set_index('date')
-interest_on_reserves = interest_on_reserves.set_index('date')
+liabilites = liabilites.set_index('date')
 
 def mat_to_month(rates : pd.DataFrame,amounts : pd.DataFrame):
-    df : pd.DataFrame = rates.merge(amounts,on='date') 
+    df : pd.DataFrame = rates.merge(amounts,on='date').fillna(0)
     df.index = pd.to_datetime(df.index, format='%d %b %y')
+    
     
     # Create full daily index
     full_index = pd.date_range(df.index.min(),
@@ -39,10 +44,15 @@ def mat_to_month(rates : pd.DataFrame,amounts : pd.DataFrame):
     df_daily = df.reindex(full_index).ffill()
     df_daily.index.name = 'date'
 
-    df_daily['interest_paid'] = ((df_daily['bank_rate'] / 100) * df_daily['reserves']) / 365
+    # get column names automatically
+    rate_col = rates.columns[0]
+    amount_col = amounts.columns[0]
+    interest_col = 'interest_' + amount_col
+
+    df_daily[interest_col] = ((df_daily[rate_col] / 100) * df_daily[amount_col]) / 365
 
     #group by monthly
-    return pd.DataFrame(df_daily['interest_paid'].resample('ME').sum())
+    return pd.DataFrame(df_daily[interest_col].resample('ME').sum()).round(3)
 
     
 
@@ -50,5 +60,10 @@ def mat_to_month(rates : pd.DataFrame,amounts : pd.DataFrame):
 #monthly = monthly.merge(gilt_interest,left_index=True,right_on='date')
 #monthly = monthly.set_index('date')
 
-df = mat_to_month(rates,interest_on_reserves)
-print(df)
+dfs = [mat_to_month(rates[['bank_r']],liabilites[['reserves']]),
+                mat_to_month(rates[['deposit_r']],liabilites[['deposit']]),
+                mat_to_month(rates[['op_deposit_r']],liabilites[['op_deposit']])]
+ #               left_index=True,
+  #              right_index=True)
+
+pd.concat(dfs, axis=1).to_csv('test.csv')
