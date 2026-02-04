@@ -44,10 +44,6 @@ repos["maturity_date"] = pd.to_datetime(repos["maturity_date"])
 
 daily_rows = []
 for _, row in repos.iterrows():
-    # If either date is missing, we can't expand; skip those rows
-    #if pd.isna(row["operation_date"]) or pd.isna(row["maturity_date"]):
-      #  continue
-
     dates = pd.date_range(row["operation_date"], row["maturity_date"] - pd.Timedelta(days=1))
 
     daily_rows.append(
@@ -92,21 +88,20 @@ df["interest_total"] = (
 # Sum to daily total, then monthly total (month-end buckets)
 # -------------------------------
 
-daily_total = (
-    df.groupby("date", as_index=False)
-      .agg(interest_total=("interest_total", "sum"))
-)
-
-daily_total["month_end"] = daily_total["date"].dt.to_period("M").dt.to_timestamp("M")
+daily_total = df.groupby("date", as_index=False)['interest_total'].sum()
 
 monthly = (
-    daily_total.groupby("month_end", as_index=False)
-               .agg(interest_total=("interest_total", "sum"))
+    daily_total
+        .set_index("date")
+        .resample("ME")["interest_total"]
+        .sum()
+        .round(3) 
+            
 )
 
 # -------------------------------
 # Save monthly output
 # -------------------------------
 
-monthly.to_csv(output_path, index=False)
+monthly.to_csv(output_path, index=True)
 print(monthly.head())
