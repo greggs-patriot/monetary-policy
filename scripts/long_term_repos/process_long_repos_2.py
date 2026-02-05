@@ -95,7 +95,7 @@ monthly = (
         .set_index("date")
         .resample("ME")["interest_total"]
         .sum()
-        .round(3) 
+    #    .round(3) 
             
 )
 
