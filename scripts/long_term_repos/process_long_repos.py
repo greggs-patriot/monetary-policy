@@ -7,27 +7,27 @@ OUT_PATH = os.path.join('processed','long_term_repos','long_term_repos_1.csv')
 df = pd.read_excel(PATH,
                    sheet_name='LTR Summary',
                    usecols=[0,3,5,8],
-                   names=['op_date','mat_date','amount','rate']).dropna(how="all")
+                   names=['op_date','mat_date','amount','rate']).dropna(how='all')
 
 
-df["op_date"] = pd.to_datetime(df["op_date"], dayfirst=True)
-df["mat_date"] = pd.to_datetime(df["mat_date"], dayfirst=True)
+df['op_date'] = pd.to_datetime(df['op_date'], dayfirst=True)
+df['mat_date'] = pd.to_datetime(df['mat_date'], dayfirst=True)
 
-df["op_id"] = df.index
+df['op_id'] = df.index
 
 # Daily interest per operation (£m)
-df["daily_interest"] = df["amount"] * df["rate"] / 100 / 365
+df['daily_interest'] = df['amount'] * df['rate'] / 100 / 365
 
 
 rows = []
 
 for _, r in df.iterrows():
-    dates = pd.date_range(r.op_date, r.mat_date - pd.Timedelta(days=1), freq="D")
+    dates = pd.date_range(r.op_date, r.mat_date - pd.Timedelta(days=1), freq='D')
     
     tmp = pd.DataFrame({
-        "date": dates,
-        "op_id": r.op_id,
-        "interest_total": r.daily_interest
+        'date': dates,
+        'op_id': r.op_id,
+        'interest_total': r.daily_interest
     })
     
     rows.append(tmp)
@@ -35,12 +35,12 @@ for _, r in df.iterrows():
 daily = pd.concat(rows)
 
 # Sum across operations
-daily_total = daily.groupby("date", as_index=False)["interest_total"].sum()
+daily_total = daily.groupby('date', as_index=False)['interest_total'].sum()
 
 monthly = (
     daily_total
-        .set_index("date")
-        .resample("ME")["interest_total"]
+        .set_index('date')
+        .resample('ME')['interest_total']
         .sum()
        # .round(3) 
             
