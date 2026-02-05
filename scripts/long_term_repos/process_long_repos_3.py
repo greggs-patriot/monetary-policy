@@ -5,10 +5,10 @@ RAW_DIR = 'raw'
 OUTPUT_DIR = 'processed'
 
 repo_file = 'indexed-long-term-repo-omos-by-operation.XLSX'   # 2014–present file
-rates_file = 'daily_bank_rate.csv'
+rates_file = 'full_daily_bank_rate.csv'
 
 repo_path = os.path.join(RAW_DIR,'long_term_repos',repo_file)
-rates_path = os.path.join(RAW_DIR,'general',rates_file)
+rates_path = os.path.join('processed','general',rates_file)
 
 output_path = os.path.join(OUTPUT_DIR,'long_term_repos','long_term_repos_3.csv')
 
@@ -82,9 +82,7 @@ daily_rates = pd.read_csv(
     header=0
 )
 
-daily_rates['date'] = pd.to_datetime(daily_rates['date'], format='%d %b %y')
-daily_rates['bank_rate'] = daily_rates['bank_rate'] / 100
-
+daily_rates['date'] = pd.to_datetime(daily_rates['date'])
 
 # (Optional but usually wise) ensure sorted then forward fill
 daily_rates = daily_rates.sort_values('date')
