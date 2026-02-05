@@ -27,7 +27,7 @@ for _, r in df.iterrows():
     tmp = pd.DataFrame({
         "date": dates,
         "op_id": r.op_id,
-        "interest": r.daily_interest
+        "interest_total": r.daily_interest
     })
     
     rows.append(tmp)
@@ -35,12 +35,12 @@ for _, r in df.iterrows():
 daily = pd.concat(rows)
 
 # Sum across operations
-daily_total = daily.groupby("date", as_index=False)["interest"].sum()
+daily_total = daily.groupby("date", as_index=False)["interest_total"].sum()
 
 monthly = (
     daily_total
         .set_index("date")
-        .resample("ME")["interest"]
+        .resample("ME")["interest_total"]
         .sum()
        # .round(3) 
             
