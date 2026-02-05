@@ -35,8 +35,8 @@ repos = repos[
     & repos['maturity_date'].notna()
 ].fillna(0)
 
-repos['operation_date'] = pd.to_datetime(repos['operation_date'])
-repos['maturity_date'] = pd.to_datetime(repos['maturity_date'])
+repos['operation_date'] = pd.to_datetime(repos['operation_date'],format='%d/%m/%Y')
+repos['maturity_date'] = pd.to_datetime(repos['maturity_date'],format='%d/%m/%Y')
 
 # -------------------------------
 # Expand repos to daily (per-op rows)
