@@ -2,15 +2,15 @@ import os
 import pandas as pd
 
 RAW_DIR = "raw"
-OUTPUT_DIR = "output"
+OUTPUT_DIR = "processed"
 
 repo_file = "indexed-long-term-repo-omos-by-operation.XLSX"   # 2014–present file
 rates_file = "daily_bank_rate.csv"
 
-repo_path = os.path.join(RAW_DIR, repo_file)
-rates_path = os.path.join(RAW_DIR, rates_file)
+repo_path = os.path.join(RAW_DIR,'long_term_repos',repo_file)
+rates_path = os.path.join(RAW_DIR,'general',rates_file)
 
-output_path = os.path.join(OUTPUT_DIR, "long_term_repos_3.csv")
+output_path = os.path.join(OUTPUT_DIR,'long_term_repos',"long_term_repos_3.csv")
 
 # -------------------------------
 # Load repo ops (only needed cols)

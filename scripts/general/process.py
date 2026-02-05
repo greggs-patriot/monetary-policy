@@ -2,27 +2,16 @@ import os
 import pandas as pd
 
 
-
-gilt_interest = pd.read_csv(os.path.join('raw','interest_on_debt.csv'),
-                            skiprows=408,
-                            names=['date','gilts'])
-
-gilt_interest['date'] = gilt_interest['date'].astype(str).str.strip()
-gilt_interest['date'] = (pd.to_datetime(gilt_interest['date'],format='%Y %b')
-                        + pd.offsets.MonthEnd(0))
-
-#print(gilt_interest)
-
-liabilites = pd.read_csv(os.path.join('raw','smf_liabilites.csv'),
+liabilites = pd.read_csv(os.path.join('raw','general','smf_liabilites.csv'),
                             usecols=[0,1,2,3,4,6],
                             names=['date','deposit','fine_tune_l','reserves','op_deposit','weekly_l'],
                             header=0)
-assets = pd.read_csv(os.path.join('raw','smf_assets.csv'),
+assets = pd.read_csv(os.path.join('raw','general','smf_assets.csv'),
                             usecols=[0,1,2,3,4,7,8],
                             names=['date','weekly_a','fine_tune_a','long_term_repo','lending','op_lending','short_term_repo'],
                             header=0)
 
-rates = pd.read_csv(os.path.join('raw','rates_and_ranges.csv'),
+rates = pd.read_csv(os.path.join('raw','general','rates_and_ranges.csv'),
                     usecols=[0,1,2,3,4,5],
                     names=['date','bank_r','lending_r','deposit_r','op_lending_r','op_deposit_r'],
                     header=0)
@@ -55,11 +44,6 @@ def mat_to_month(rates : pd.DataFrame,amounts : pd.DataFrame):
     #group by monthly
     return pd.DataFrame(df_daily[interest_col].resample('ME').sum()).round(3)
 
-    
-
-
-#monthly = monthly.merge(gilt_interest,left_index=True,right_on='date')
-#monthly = monthly.set_index('date')
 
 pairs = [
     ('bank_r',       liabilites, 'reserves'),
@@ -80,4 +64,4 @@ dfs = [
     for r_col, df, a_col in pairs
 ]
 
-pd.concat(dfs, axis=1).to_csv("test.csv")
+pd.concat(dfs, axis=1).to_csv(os.path.join('processed','general','test.csv'))

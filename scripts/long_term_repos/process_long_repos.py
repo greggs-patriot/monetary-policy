@@ -1,8 +1,8 @@
 import os
 import pandas as pd
 
-PATH = os.path.join('raw','long-term-repo-omos-by-operation.xls')
-OUT_PATH = os.path.join('output','long_term_repos_1.csv')
+PATH = os.path.join('raw','long_term_repos','long-term-repo-omos-by-operation.xls')
+OUT_PATH = os.path.join('processed','long_term_repos','long_term_repos_1.csv')
 
 df = pd.read_excel(PATH,
                    sheet_name='LTR Summary',
@@ -42,7 +42,7 @@ monthly = (
         .set_index("date")
         .resample("ME")["interest"]
         .sum()
-        .round(3) 
+       # .round(3) 
             
 )
 
